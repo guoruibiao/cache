@@ -33,5 +33,6 @@ func TestLRUCache_Delete(t *testing.T) {
 	t.Log(lrucacher.Peek())
 	// test for deleting element
 	lrucacher.Delete("name")
+	t.Log(lrucacher.Size())
 	t.Log(lrucacher.Peek())
 }
