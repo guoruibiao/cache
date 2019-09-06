@@ -12,6 +12,8 @@ type CommonCache struct {
 }
 
 func (this *CommonCache) GetCachedData() (map[string]interface{}, error) {
+	this.lock.Lock()
+	defer this.lock.Unlock()
 	if this.container != nil {
 		return this.container, nil
 	}
