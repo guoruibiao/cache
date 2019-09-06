@@ -56,16 +56,43 @@ func (this *LRUCache) Cache(key string, data interface{}) (bool, error) {
 	return true, nil
 }
 
-func (this *LRUCache) removeOldest() {
-	ent := this.sortedlist.Back()
+func (this *LRUCache) Peek() (interface{}, error) {
+	this.lock.Lock()
+	defer this.lock.Unlock()
+	ent := this.sortedlist.Front()
 	if ent != nil {
-		this.sortedlist.Remove(ent)
 		keyvalue := ent.Value.(*entry)
-		delete(this.container, keyvalue.key)
-		this.size -=1
+		return keyvalue.value, nil
+	}else {
+		return nil, errors.New("peeked empty data.")
 	}
 }
 
+func (this *LRUCache) Tail() (interface{}, error) {
+	this.lock.Lock()
+	defer this.lock.Unlock()
+	ent := this.sortedlist.Back()
+	if ent != nil {
+		keyvalue := ent.Value.(*entry)
+		return keyvalue.value, nil
+	}else {
+		return nil, errors.New("tailed empty data.")
+	}
+}
+
+func (this *LRUCache) removeOldest() {
+	ent := this.sortedlist.Back()
+	if ent != nil {
+		this.removeElement(ent)
+	}
+}
+
+func (this *LRUCache) removeElement(element *list.Element) {
+	this.sortedlist.Remove(element)
+	keyvalue := element.Value.(*entry)
+	delete(this.container, keyvalue.key)
+	this.size -=1
+}
 
 func (this *LRUCache) Size() int {
 	this.lock.Lock()
@@ -88,15 +115,12 @@ func (this *LRUCache) Get(key string) (interface{}, error) {
 func (this *LRUCache) Delete(key string) (bool, error) {
 	this.lock.Lock()
 	defer this.lock.Unlock()
-	element := &list.Element{Value:key}
-	if _, exists := this.container[key]; exists == false {
-		return true, nil
-	}else{
-		this.sortedlist.Remove(element)
-		delete(this.container, key)
-		this.size -= 1
+	if element, exists := this.container[key]; exists {
+		this.removeElement(element)
 		return true, nil
 	}
+	// no such key, also can be thought as succeed.
+	return true, nil
 }
 
 func (this *LRUCache) GetCachedData() (map[string]interface{}, error) {

@@ -19,3 +19,19 @@ func TestLRUCache_Get(t *testing.T) {
     //t.Log(lrucacher.GetCachedData())
 
 }
+
+
+func TestLRUCache_Delete(t *testing.T) {
+	lrucacher, err := NewLRUCache(3)
+	if err != nil {
+		t.Error(err)
+	}
+	lrucacher.Cache("name", "guoruibiao")
+	lrucacher.Cache("age", 25)
+	lrucacher.Cache("address", "北京市朝阳区")
+	t.Log(lrucacher.Get("name"))
+	t.Log(lrucacher.Peek())
+	// test for deleting element
+	lrucacher.Delete("name")
+	t.Log(lrucacher.Peek())
+}
